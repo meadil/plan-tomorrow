@@ -10,15 +10,13 @@
 
 <body>
 
-    <div class="date-display" style="display: flex; justify-content: space-between; align-items: flex-start;">
-        <div>
+    <header class="header-container">
+        <div class="date-display">
             <h2>{{ current_time.strftime("%B '%y") }}</h2>
             <h3>{{ current_time.strftime("%A") }}</h3>
         </div>
-        <a href="{{ url_for('auth.logout') }}"
-            style="color: #8a8d98; font-size: 0.8rem; text-decoration: none; font-weight: 500; background: #f2f3f5; padding: 6px 12px; border-radius: 8px;">Log
-            Out</a>
-    </div>
+        <a href="{{ url_for('auth.logout') }}" class="logout-btn">Log Out</a>
+    </header>
 
     <div class="week-bar" id="weekBar">
         <div class="day-pill" data-day="0">
@@ -60,12 +58,7 @@
 
     <main class="content-container">
         {% block content %}
-        <div id="taskList" class="task-list">
-            <div class="task-item">
-                <span class="task-checkbox"></span>
-                <span class="task-title">Example task item</span>
-            </div>
-        </div>
+        <div id="taskList" class="task-list"></div>
         {% endblock %}
     </main>
 
@@ -87,40 +80,6 @@
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
             </button>
-        </form>
-    </div>
-
-    <div id="modalOverlay" class="modal-overlay"></div>
-
-    <div id="editModal" class="edit-modal">
-        <div class="modal-header">
-            <h3>Edit Task</h3>
-            <button type="button" id="closeModalBtn" class="close-modal-btn">&times;</button>
-        </div>
-
-        <form id="editTaskForm">
-            <input type="hidden" id="editTaskId" />
-
-            <div class="form-group">
-                <label for="editTaskTitle">Task Title</label>
-                <input type="text" id="editTaskTitle" class="edit-text-input" placeholder="Task name..." required />
-            </div>
-
-            <div class="time-range-group">
-                <div class="form-group">
-                    <label for="editStartTime">Start Time</label>
-                    <input type="time" id="editStartTime" class="edit-time-input" />
-                </div>
-                <div class="form-group">
-                    <label for="editEndTime">End Time</label>
-                    <input type="time" id="editEndTime" class="edit-time-input" />
-                </div>
-            </div>
-
-            <div class="modal-actions">
-                <button type="button" id="deleteTaskBtn" class="delete-task-btn">Delete</button>
-                <button type="submit" class="save-task-btn">Save Changes</button>
-            </div>
         </form>
     </div>
 
@@ -150,6 +109,7 @@
 
                 const isoDate = formatDateToISO(pillDate);
                 pill.setAttribute("data-date", isoDate);
+
                 pill.querySelector(".day-number").textContent = pillDate.getDate();
 
                 if (dayIndex === currentDayOfWeek) {
@@ -168,39 +128,39 @@
                 });
             });
 
-            // Fetch & render tasks
             async function fetchTasks(dateStr) {
                 const taskList = document.getElementById("taskList");
-                taskList.innerHTML = `<p style="color:#8a8d98; font-size: 0.9rem; text-align:center; margin-top:20px;"></p>`; /* i don't like loading, don't add it here */
 
                 try {
                     const res = await fetch(`/get-tasks?date=${dateStr}`);
+                    if (!res.ok) throw new Error("Failed to load tasks");
+
                     const tasks = await res.json();
 
                     taskList.innerHTML = "";
-                    if (tasks.length === 0) {
-                        taskList.innerHTML = `<p style="color:#b0b4b8; font-size:0.9rem; text-align:center; margin-top:20px;">No tasks here.</p>`;
+                    if (!tasks || tasks.length === 0) {
+                        taskList.innerHTML = `<p class="empty-state">No tasks here.</p>`;
                         return;
                     }
 
                     tasks.forEach(task => renderTaskItem(task));
                 } catch (err) {
                     console.error("Failed to fetch tasks:", err);
+                    taskList.innerHTML = `<p class="empty-state">No tasks here.</p>`;
                 }
             }
 
-            // Render single task item
             function renderTaskItem(task) {
                 const taskList = document.getElementById("taskList");
 
-                if (taskList.querySelector("p")) {
+                const emptyMsg = taskList.querySelector(".empty-state");
+                if (emptyMsg) {
                     taskList.innerHTML = "";
                 }
 
                 const item = document.createElement("div");
                 item.className = `task-item ${task.is_completed ? "completed" : ""}`;
                 item.setAttribute("data-id", task.id);
-                item.style.cursor = "pointer";
 
                 let timeString = "";
                 if (task.start_time && task.end_time) {
@@ -215,9 +175,7 @@
                     ${timeString ? `<span class="task-time">${timeString}</span>` : ""}
                 `;
 
-                // Toggle completion (stopPropagation so modal doesn't open)
-                item.querySelector(".task-checkbox").addEventListener("click", async (e) => {
-                    e.stopPropagation();
+                item.querySelector(".task-checkbox").addEventListener("click", async () => {
                     try {
                         const res = await fetch(`/toggle-task/${task.id}`, { method: "POST" });
                         const data = await res.json();
@@ -235,85 +193,9 @@
                     }
                 });
 
-                // Click task item to open Edit Bottom Sheet Drawer
-                item.addEventListener("click", () => {
-                    openEditModal(task);
-                });
-
                 taskList.appendChild(item);
             }
 
-            // --- EDIT MODAL LOGIC ---
-            const modalOverlay = document.getElementById("modalOverlay");
-            const editModal = document.getElementById("editModal");
-            const closeModalBtn = document.getElementById("closeModalBtn");
-            const editTaskForm = document.getElementById("editTaskForm");
-            const editTaskId = document.getElementById("editTaskId");
-            const editTaskTitle = document.getElementById("editTaskTitle");
-            const editStartTime = document.getElementById("editStartTime");
-            const editEndTime = document.getElementById("editEndTime");
-            const deleteTaskBtn = document.getElementById("deleteTaskBtn");
-
-            function openEditModal(task) {
-                editTaskId.value = task.id;
-                editTaskTitle.value = task.title;
-                editStartTime.value = task.raw_start_time || "";
-                editEndTime.value = task.raw_end_time || "";
-
-                modalOverlay.classList.add("active");
-                editModal.classList.add("active");
-            }
-
-            function closeEditModal() {
-                modalOverlay.classList.remove("active");
-                editModal.classList.remove("active");
-            }
-
-            closeModalBtn.addEventListener("click", closeEditModal);
-            modalOverlay.addEventListener("click", closeEditModal);
-
-            // Save changes
-            editTaskForm.addEventListener("submit", async (e) => {
-                e.preventDefault();
-                const taskId = editTaskId.value;
-
-                try {
-                    const res = await fetch(`/edit-task/${taskId}`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            title: editTaskTitle.value.trim(),
-                            start_time: editStartTime.value || null,
-                            end_time: editEndTime.value || null
-                        })
-                    });
-
-                    if (res.ok) {
-                        closeEditModal();
-                        fetchTasks(selectedDateStr);
-                    }
-                } catch (err) {
-                    console.error("Failed to edit task:", err);
-                }
-            });
-
-            // Delete task
-            deleteTaskBtn.addEventListener("click", async () => {
-                const taskId = editTaskId.value;
-                if (!taskId) return;
-
-                try {
-                    const res = await fetch(`/delete-task/${taskId}`, { method: "POST" });
-                    if (res.ok) {
-                        closeEditModal();
-                        fetchTasks(selectedDateStr);
-                    }
-                } catch (err) {
-                    console.error("Failed to delete task:", err);
-                }
-            });
-
-            // --- ADD TASK FORM HANDLER ---
             const addForm = document.getElementById("addTaskForm");
             const taskInput = document.getElementById("taskInput");
             const startTimeInput = document.getElementById("startTimeInput");
@@ -347,7 +229,6 @@
                 }
             });
 
-            // Initial fetch
             fetchTasks(selectedDateStr);
         });
     </script>
