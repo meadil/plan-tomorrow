@@ -21,10 +21,9 @@ def signup():
             flash('Email already registered. Please log in.', 'error')
             return render_template('signup.html')
 
-        # Create new user
+        # Create user account
         hashed_password = generate_password_hash(password, method='scrypt')
         new_user = User(email=email, password=hashed_password, is_verified=False)
-        
         db.session.add(new_user)
         db.session.commit()
 
@@ -32,7 +31,7 @@ def signup():
         token = generate_verification_token(new_user.email)
         send_verification_email(new_user.email, token)
 
-        flash('Account created! Check your email to verify your account.', 'info')
+        flash('A verification email has been sent to your inbox. Please verify before logging in.', 'info')
         return redirect(url_for('auth.login'))
 
     return render_template('signup.html')
@@ -72,7 +71,7 @@ def verify_email(token):
     else:
         user.is_verified = True
         db.session.commit()
-        flash('Your email has been verified! You can now log in.', 'success')
+        flash('Your email has been verified! You can now log in.', 'info')
 
     return redirect(url_for('auth.login'))
 

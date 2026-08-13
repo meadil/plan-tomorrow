@@ -1,13 +1,14 @@
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-import os
 
 db = SQLAlchemy()
 
 def create_app():
     app = Flask(__name__)
 
+    # Database configuration (PostgreSQL on production, SQLite for local dev)
     db_url = os.getenv("DATABASE_URL", "sqlite:///db.sqlite")
     if db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql://", 1)
@@ -18,7 +19,7 @@ def create_app():
 
     db.init_app(app)
 
-    # Configure Flask-Login
+    # Flask-Login setup
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'
     login_manager.init_app(app)
@@ -26,13 +27,13 @@ def create_app():
     from .models import User
 
     @login_manager.user_loader
-    def load_user(id):
-        return User.query.get(int(id))
+    def load_user(user_id):
+        return User.query.get(int(user_id))
 
     # Register Blueprints
     from .views import views
     from .auth import auth
-    
+
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/')
 

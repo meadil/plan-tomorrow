@@ -1,78 +1,22 @@
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
-from flask_login import login_user, logout_user, login_required, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
-import resend
-import os
-from .models import User, Task
+from flask import Blueprint, render_template, request, jsonify
+from flask_login import login_required, current_user
+from datetime import datetime, date
+from .models import Task
 from . import db
-from datetime import datetime, date, time
 
 views = Blueprint('views', __name__)
 
-resend.api_key = os.environ.get('RESEND_API_KEY')
-
 def format_time_str(t):
+    """Formats time object to '9:30 AM'."""
     return t.strftime("%I:%M %p").lstrip("0") if t else None
 
 @views.route('/')
+@login_required
 def home():
-    return render_template("base.html", current_time=datetime.now())
-
-@views.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        user = User.query.filter_by(email=email).first()
-
-        if user and check_password_hash(user.password, password):
-            login_user(user, remember=True)
-            return redirect(url_for('views.home'))
-        else:
-            flash('Invalid email or password', category='error')
-
-    return render_template("login.html")
-
-@views.route('/signup', methods=['GET', 'POST'])
-def signup():
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-
-        user_exists = User.query.filter_by(email=email).first()
-        if user_exists:
-            flash('Email already registered', category='error')
-        else:
-            new_user = User(
-                email=email,
-                password=generate_password_hash(password, method='scrypt')
-            )
-            db.session.add(new_user)
-            db.session.commit()
-
-            try:
-                params = {
-                    "from": "Plan Tomorrow <onboarding@resend.dev>",
-                    "to": [email],
-                    "subject": "Verify your Plan Tomorrow account",
-                    "html": """
-                    <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 20px; border: 1px solid #e5e8eb; border-radius: 16px;">
-                        <h2 style="color: #000;">Verify your email</h2>
-                        <p style="color: #50545c;">Welcome to <strong>Plan Tomorrow</strong>! Click below to verify your email address and start organizing your day.</p>
-                        <a href="#" style="display: inline-block; background: #000; color: #fff; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: bold; margin: 15px 0;">Verify Email Address</a>
-                    </div>
-                    """
-                }
-                resend.Emails.send(params)
-            except Exception as e:
-                print("Failed to send verification email:", e)
-
-            login_user(new_user, remember=True)
-            return redirect(url_for('views.home'))
-
-    return render_template("signup.html")
+    return render_template("home.html", current_time=datetime.now())
 
 @views.route('/get-tasks', methods=['GET'])
+@login_required
 def get_tasks():
     date_str = request.args.get('date')
     if not date_str:
@@ -80,7 +24,7 @@ def get_tasks():
     else:
         target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
         
-    tasks = Task.query.filter_by(date=target_date)\
+    tasks = Task.query.filter_by(user_id=current_user.id, date=target_date)\
         .order_by(Task.start_time.asc().nullslast(), Task.created_at.asc()).all()
     
     return jsonify([
@@ -96,6 +40,7 @@ def get_tasks():
     ])
 
 @views.route('/add-task', methods=['POST'])
+@login_required
 def add_task():
     data = request.get_json() or {}
     title = data.get('title')
@@ -114,7 +59,8 @@ def add_task():
         title=title, 
         date=task_date,
         start_time=parsed_start,
-        end_time=parsed_end
+        end_time=parsed_end,
+        user_id=current_user.id
     )
     db.session.add(new_task)
     db.session.commit()
@@ -128,8 +74,9 @@ def add_task():
     }), 201
 
 @views.route('/edit-task/<int:task_id>', methods=['POST'])
+@login_required
 def edit_task(task_id):
-    task = Task.query.get_or_404(task_id)
+    task = Task.query.filter_by(id=task_id, user_id=current_user.id).first_or_404()
     data = request.get_json() or {}
 
     if 'title' in data and data['title'].strip():
@@ -151,15 +98,17 @@ def edit_task(task_id):
     })
 
 @views.route('/toggle-task/<int:task_id>', methods=['POST'])
+@login_required
 def toggle_task(task_id):
-    task = Task.query.get_or_404(task_id)
+    task = Task.query.filter_by(id=task_id, user_id=current_user.id).first_or_404()
     task.is_completed = not task.is_completed
     db.session.commit()
     return jsonify({'id': task.id, 'is_completed': task.is_completed})
 
 @views.route('/delete-task/<int:task_id>', methods=['DELETE'])
+@login_required
 def delete_task(task_id):
-    task = Task.query.get_or_404(task_id)
+    task = Task.query.filter_by(id=task_id, user_id=current_user.id).first_or_404()
     db.session.delete(task)
     db.session.commit()
     return jsonify({'success': True})
