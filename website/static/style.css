@@ -1,0 +1,452 @@
+/* Universal Box Sizing Reset */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* Import SF Pro Display (for headings) and SF Pro Text (for body text) */
+@font-face {
+    font-family: "SF Pro Display";
+    src: url("https://applesocial.s3.amazonaws.com/assets/styles/fonts/sanfrancisco/sanfranciscodisplay-regular-webfont.woff2") format("woff2");
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: "SF Pro Display";
+    src: url("https://applesocial.s3.amazonaws.com/assets/styles/fonts/sanfrancisco/sanfranciscodisplay-medium-webfont.woff2") format("woff2");
+    font-weight: 500;
+}
+
+@font-face {
+    font-family: "SF Pro Display";
+    src: url("https://applesocial.s3.amazonaws.com/assets/styles/fonts/sanfrancisco/sanfranciscodisplay-bold-webfont.woff2") format("woff2");
+    font-weight: 700;
+}
+
+/* Apply to your page */
+body {
+    font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #FCFFFD;
+    color: #000000;
+    margin: 0;
+    padding: 15px 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Centered dates with tight vertical spacing */
+.date-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-top: 15px;
+    /* Reduced top margin */
+}
+
+.date-display h2 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.0;
+}
+
+.date-display h3 {
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: #8a8d98;
+    margin: 6px 0 0 0;
+    line-height: 1.0;
+}
+
+/* Centered Week Bar container */
+.week-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+    margin: 20px 0;
+    /* Reduced top/bottom margin */
+    padding: 0 10px;
+}
+
+/* Individual day card/pill shape */
+.day-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 68px;
+    border-radius: 14px;
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Weekday name styling */
+.day-pill .day-name {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #b0b4b8;
+    /* Muted light gray */
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+}
+
+/* Day number styling */
+.day-pill .day-number {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #90949c;
+    /* Muted medium gray */
+    line-height: 1.0;
+    margin-bottom: 6px;
+}
+
+/* Dot style */
+.day-pill .day-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: transparent;
+    display: inline-block;
+}
+
+/* Hover state for non-active day pills */
+.day-pill:not(.active):hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Active Day Pill (the selected day) */
+.day-pill.active {
+    background-color: #ffffff;
+    border-color: #e5e8eb;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+}
+
+.day-pill.active .day-name {
+    color: #70747c;
+    /* Darker name */
+}
+
+.day-pill.active .day-number {
+    color: #000000;
+    /* Fully black date */
+}
+
+/* Today's yellow/orange indicator dot (stays pinned) */
+.day-pill.today .day-dot {
+    background-color: #ffc000;
+}
+
+/* Content Container */
+.content-container {
+    width: 100%;
+    max-width: 400px;
+    padding-bottom: 100px;
+    /* Extra padding so tasks aren't hidden by fixed input bar */
+}
+
+/* Task List Display */
+.task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.task-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: #ffffff;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid #f0f2f5;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.task-checkbox {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid #d0d4dc;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.task-title {
+    font-size: 0.95rem;
+    color: #1c1c1e;
+    font-weight: 500;
+}
+
+/* Align time to the far right of task card */
+.task-time {
+    margin-left: auto;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #8a8d98;
+    background-color: #f4f5f7;
+    padding: 4px 8px;
+    border-radius: 8px;
+    white-space: nowrap;
+}
+
+/* Bottom Bar Wrapper */
+.bottom-bar-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 400px;
+    z-index: 100;
+}
+
+/* Input Form Layout */
+.task-input-form {
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    border: 1.5px solid #e5e8eb;
+    border-radius: 30px;
+    padding: 6px 6px 6px 14px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.task-input-form:focus-within {
+    border-color: #000000;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Text Input Field - Allow fluid shrinking */
+.task-input {
+    flex: 1;
+    min-width: 0;
+    /* CRITICAL: Prevents input bar from overflowing on mobile */
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: #000000;
+    padding-right: 6px;
+}
+
+.task-input::placeholder {
+    color: #a0a4ac;
+}
+
+/* Time input controls wrapper */
+.time-inputs-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-right: 6px;
+    flex-shrink: 0;
+    /* Keeps time pickers fixed in size */
+}
+
+/* Ultra-compact time picker pills */
+.time-picker {
+    border: none;
+    outline: none;
+    background: #f2f3f5;
+    font-family: inherit;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: #33373e;
+    border-radius: 8px;
+    padding: 5px 2px;
+    cursor: pointer;
+    width: 60px;
+    text-align: center;
+}
+
+/* Hide bulky browser clock icons to save space */
+.time-picker::-webkit-calendar-picker-indicator,
+.time-picker::-webkit-inner-spin-button {
+    display: none;
+    -webkit-appearance: none;
+}
+
+.time-dash {
+    font-size: 0.75rem;
+    color: #a0a4ac;
+}
+
+/* Round Add Button */
+.add-task-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #000000;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform 0.1s ease, background-color 0.2s ease;
+    padding: 0;
+}
+
+.add-task-btn:active {
+    transform: scale(0.92);
+}
+
+/* Dimmed Backdrop Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Bottom Sheet Edit Drawer */
+.edit-modal {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, 100%);
+    /* Hidden offscreen below */
+    width: 100%;
+    max-width: 440px;
+    background-color: #ffffff;
+    border-radius: 24px 24px 0 0;
+    padding: 24px 20px 30px;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.15);
+    z-index: 201;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.edit-modal.active {
+    transform: translate(-50%, 0);
+    /* Slide up into view */
+}
+
+/* Modal Header */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #000000;
+}
+
+.close-modal-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.6rem;
+    color: #8a8d98;
+    cursor: pointer;
+    line-height: 1;
+}
+
+/* Form Styles inside Modal */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #8a8d98;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.edit-text-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #e5e8eb;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    background-color: #f9fafb;
+}
+
+.edit-text-input:focus {
+    border-color: #000000;
+    background-color: #ffffff;
+}
+
+.time-range-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.edit-time-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e5e8eb;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    background-color: #f9fafb;
+    outline: none;
+    cursor: pointer;
+}
+
+/* Modal Action Buttons */
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.delete-task-btn {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #fee2e2;
+    border-radius: 12px;
+    background-color: #fef2f2;
+    color: #dc2626;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.save-task-btn {
+    flex: 2;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    background-color: #000000;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
