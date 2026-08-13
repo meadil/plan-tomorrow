@@ -9,7 +9,6 @@ from datetime import datetime, date, time
 
 views = Blueprint('views', __name__)
 
-# Initialize Resend API key from environment variable
 resend.api_key = os.environ.get('RESEND_API_KEY')
 
 def format_time_str(t):
@@ -51,7 +50,6 @@ def signup():
             db.session.add(new_user)
             db.session.commit()
 
-            # Send verification email via Resend
             try:
                 params = {
                     "from": "Plan Tomorrow <onboarding@resend.dev>",
@@ -60,9 +58,8 @@ def signup():
                     "html": """
                     <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 20px; border: 1px solid #e5e8eb; border-radius: 16px;">
                         <h2 style="color: #000;">Verify your email</h2>
-                        <p style="color: #50545c;">Welcome to <strong>Plan Tomorrow</strong>! Click the button below to verify your email address and start organizing your day.</p>
+                        <p style="color: #50545c;">Welcome to <strong>Plan Tomorrow</strong>! Click below to verify your email address and start organizing your day.</p>
                         <a href="#" style="display: inline-block; background: #000; color: #fff; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: bold; margin: 15px 0;">Verify Email Address</a>
-                        <p style="color: #a0a4ac; font-size: 0.8rem;">If you didn't create an account, you can safely ignore this email.</p>
                     </div>
                     """
                 }
