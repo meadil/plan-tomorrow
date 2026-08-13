@@ -10,7 +10,7 @@ body {
     background-color: #FCFFFD;
     color: #000000;
     margin: 0;
-    padding: 15px 20px;
+    padding: 15px 12px;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -19,9 +19,8 @@ body {
 
 /* Header Container */
 .header-container {
-    position: relative;
     width: 100%;
-    max-width: 400px;
+    max-width: 440px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -50,43 +49,24 @@ body {
     line-height: 1.0;
 }
 
-/* Sleek Logout Badge */
-.logout-btn {
-    position: absolute;
-    right: 0;
-    top: 4px;
-    color: #8a8d98;
-    font-size: 0.75rem;
-    text-decoration: none;
-    font-weight: 600;
-    background: #f2f3f5;
-    padding: 6px 12px;
-    border-radius: 20px;
-    transition: background 0.2s ease, color 0.2s ease;
-}
-
-.logout-btn:hover {
-    background: #e5e8eb;
-    color: #000000;
-}
-
-/* Week Bar */
+/* Edge-to-Edge Mobile Week Bar */
 .week-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    max-width: 400px;
+    max-width: 440px;
     margin: 20px 0;
-    padding: 0 10px;
+    gap: 4px;
 }
 
 .day-pill {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 44px;
+    max-width: 52px;
     height: 68px;
     border-radius: 14px;
     border: 1.5px solid transparent;
@@ -141,10 +121,10 @@ body {
     background-color: #ffc000;
 }
 
-/* Content & Task List */
+/* Content Container */
 .content-container {
     width: 100%;
-    max-width: 400px;
+    max-width: 440px;
     padding-bottom: 100px;
 }
 
@@ -156,7 +136,7 @@ body {
 }
 
 .empty-state {
-    color: #a0a4ac;
+    color: #b0b4b8;
     font-size: 0.95rem;
     font-weight: 500;
     text-align: center;
@@ -200,14 +180,14 @@ body {
     white-space: nowrap;
 }
 
-/* Bottom Bar Wrapper */
+/* Bottom Bar Wrapper (Responsive Fix for Mobile) */
 .bottom-bar-container {
     position: fixed;
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    width: calc(100% - 40px);
-    max-width: 400px;
+    width: calc(100% - 24px);
+    max-width: 440px;
     z-index: 100;
 }
 
@@ -217,7 +197,7 @@ body {
     background-color: #ffffff;
     border: 1.5px solid #e5e8eb;
     border-radius: 30px;
-    padding: 6px 8px 6px 18px;
+    padding: 6px 8px 6px 14px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -229,15 +209,45 @@ body {
 
 .task-input {
     flex: 1;
+    min-width: 0;
+    /* Prevents text field from breaking wrapper layout */
     border: none;
     outline: none;
     background: transparent;
     font-family: inherit;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: #000000;
 }
 
 .task-input::placeholder {
+    color: #a0a4ac;
+}
+
+.time-inputs-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+.time-picker {
+    border: none;
+    outline: none;
+    background: #f2f3f5;
+    font-family: inherit;
+    font-size: 0.72rem;
+    color: #50545c;
+    border-radius: 6px;
+    padding: 3px 2px;
+    cursor: pointer;
+    width: 58px;
+    /* Standardized tight width for mobile browsers */
+    text-align: center;
+}
+
+.time-dash {
+    font-size: 0.7rem;
     color: #a0a4ac;
 }
 
@@ -252,34 +262,11 @@ body {
     color: #ffffff;
     border: none;
     cursor: pointer;
+    flex-shrink: 0;
     transition: transform 0.1s ease, background-color 0.2s ease;
     padding: 0;
 }
 
 .add-task-btn:active {
     transform: scale(0.92);
-}
-
-.time-inputs-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    margin-right: 8px;
-}
-
-.time-picker {
-    border: none;
-    outline: none;
-    background: #f2f3f5;
-    font-family: inherit;
-    font-size: 0.75rem;
-    color: #50545c;
-    border-radius: 6px;
-    padding: 3px 5px;
-    cursor: pointer;
-}
-
-.time-dash {
-    font-size: 0.75rem;
-    color: #a0a4ac;
 }
