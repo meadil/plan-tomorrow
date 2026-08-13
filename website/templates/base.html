@@ -62,7 +62,7 @@
     </main>
 
     <div class="bottom-bar-container">
-        <form id="addTaskForm" class="task-input-form" onsubmit="return false;">
+        <form id="addTaskForm" class="task-input-form">
             <input type="text" id="taskInput" class="task-input" placeholder="Add a new task..." autocomplete="off"
                 required />
 
@@ -132,7 +132,7 @@
 
                 try {
                     const res = await fetch(`/get-tasks?date=${dateStr}`);
-                    if (!res.ok) throw new Error("Failed to load tasks");
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
                     const tasks = await res.json();
 
@@ -222,6 +222,8 @@
                         taskInput.value = "";
                         startTimeInput.value = "";
                         endTimeInput.value = "";
+                    } else {
+                        console.error("Server returned error:", res.status);
                     }
                 } catch (err) {
                     console.error("Failed to add task:", err);
