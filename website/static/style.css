@@ -275,7 +275,7 @@ body {
     transform: scale(0.92);
 }
 
-/* iOS Bottom Sheet / Bottom Drawer */
+/* Bottom Sheet / Bottom Drawer */
 .drawer-overlay {
     position: fixed;
     top: 0;
@@ -433,4 +433,125 @@ body {
 
 .btn-danger:active {
     transform: scale(0.98);
+}
+
+/* Authentication Pages (login.html & signup.html) */
+body.auth-body {
+    justify-content: center;
+    padding: 20px 16px;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 380px;
+    padding: 32px 24px;
+    background-color: #ffffff;
+    border-radius: 24px;
+    border: 1px solid #f0f2f5;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
+
+.auth-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #000000;
+    margin: 0 0 6px 0;
+    letter-spacing: -0.5px;
+}
+
+.auth-subtitle {
+    font-size: 0.9rem;
+    color: #8a8d98;
+    margin: 0 0 24px 0;
+}
+
+.auth-alert {
+    padding: 11px 14px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+.auth-alert.alert-error {
+    background-color: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fee2e2;
+}
+
+.auth-alert.alert-info {
+    background-color: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #dcfce7;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.auth-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.auth-field label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #8a8d98;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.auth-field input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid #e5e8eb;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-field input:focus {
+    border-color: #000000;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+.auth-btn {
+    width: 100%;
+    background-color: #000000;
+    color: #ffffff;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: transform 0.1s ease, opacity 0.2s ease;
+}
+
+.auth-btn:active {
+    transform: scale(0.98);
+}
+
+.auth-footer {
+    text-align: center;
+    font-size: 0.88rem;
+    color: #8a8d98;
+    margin-top: 24px;
+}
+
+.auth-footer a {
+    color: #000000;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
 }
