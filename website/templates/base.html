@@ -62,7 +62,7 @@
     </main>
 
     <div class="bottom-bar-container">
-        <form id="addTaskForm" class="task-input-form">
+        <form id="addTaskForm" class="task-input-form" onsubmit="return false;">
             <input type="text" id="taskInput" class="task-input" placeholder="Add a new task..." autocomplete="off"
                 required />
 
@@ -82,12 +82,30 @@
         </form>
     </div>
 
+    <div id="editModal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h3>Edit Task</h3>
+            <input type="text" id="editTitleInput" class="modal-input" placeholder="Task title..." />
+            <div class="modal-time-row">
+                <label>Time:</label>
+                <input type="time" id="editStartInput" class="time-picker" />
+                <span>-</span>
+                <input type="time" id="editEndInput" class="time-picker" />
+            </div>
+            <div class="modal-actions">
+                <button type="button" id="deleteTaskBtn" class="btn-danger">Delete</button>
+                <button type="button" id="cancelEditBtn" class="btn-secondary">Cancel</button>
+                <button type="button" id="saveEditBtn" class="btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const today = new Date();
             const currentDayOfWeek = today.getDay();
-
             let selectedDateStr = formatDateToISO(today);
+            let activeEditingTaskId = null;
 
             function formatDateToISO(d) {
                 const year = d.getFullYear();
@@ -100,7 +118,6 @@
             sundayDate.setDate(today.getDate() - currentDayOfWeek);
 
             const dayPills = document.querySelectorAll(".day-pill");
-
             dayPills.forEach((pill) => {
                 const dayIndex = parseInt(pill.getAttribute("data-day"));
                 const pillDate = new Date(sundayDate);
@@ -108,12 +125,10 @@
 
                 const isoDate = formatDateToISO(pillDate);
                 pill.setAttribute("data-date", isoDate);
-
                 pill.querySelector(".day-number").textContent = pillDate.getDate();
 
                 if (dayIndex === currentDayOfWeek) {
-                    pill.classList.add("active");
-                    pill.classList.add("today");
+                    pill.classList.add("active", "today");
                 } else {
                     pill.classList.remove("active");
                 }
@@ -121,7 +136,6 @@
                 pill.addEventListener("click", () => {
                     dayPills.forEach(p => p.classList.remove("active"));
                     pill.classList.add("active");
-
                     selectedDateStr = pill.getAttribute("data-date");
                     fetchTasks(selectedDateStr);
                 });
@@ -129,11 +143,9 @@
 
             async function fetchTasks(dateStr) {
                 const taskList = document.getElementById("taskList");
-
                 try {
                     const res = await fetch(`/get-tasks?date=${dateStr}`);
-                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-
+                    if (!res.ok) throw new Error("Failed to fetch");
                     const tasks = await res.json();
 
                     taskList.innerHTML = "";
@@ -144,18 +156,14 @@
 
                     tasks.forEach(task => renderTaskItem(task));
                 } catch (err) {
-                    console.error("Failed to fetch tasks:", err);
                     taskList.innerHTML = `<p class="empty-state">No tasks here.</p>`;
                 }
             }
 
             function renderTaskItem(task) {
                 const taskList = document.getElementById("taskList");
-
                 const emptyMsg = taskList.querySelector(".empty-state");
-                if (emptyMsg) {
-                    taskList.innerHTML = "";
-                }
+                if (emptyMsg) taskList.innerHTML = "";
 
                 const item = document.createElement("div");
                 item.className = `task-item ${task.is_completed ? "completed" : ""}`;
@@ -174,34 +182,82 @@
                     ${timeString ? `<span class="task-time">${timeString}</span>` : ""}
                 `;
 
-                item.querySelector(".task-checkbox").addEventListener("click", async () => {
+                // Toggle completion
+                item.querySelector(".task-checkbox").addEventListener("click", async (e) => {
+                    e.stopPropagation();
                     try {
                         const res = await fetch(`/toggle-task/${task.id}`, { method: "POST" });
                         const data = await res.json();
-
                         const titleSpan = item.querySelector(".task-title");
-                        if (data.is_completed) {
-                            titleSpan.style.textDecoration = "line-through";
-                            titleSpan.style.color = "#a0a4ac";
-                        } else {
-                            titleSpan.style.textDecoration = "none";
-                            titleSpan.style.color = "#1c1c1e";
-                        }
+                        titleSpan.style.textDecoration = data.is_completed ? "line-through" : "none";
+                        titleSpan.style.color = data.is_completed ? "#a0a4ac" : "#1c1c1e";
                     } catch (err) {
-                        console.error("Failed to toggle task:", err);
+                        console.error(err);
                     }
+                });
+
+                // Tap to Edit Task
+                item.addEventListener("click", () => {
+                    activeEditingTaskId = task.id;
+                    document.getElementById("editTitleInput").value = task.title;
+                    document.getElementById("editStartInput").value = task.raw_start || "";
+                    document.getElementById("editEndInput").value = task.raw_end || "";
+                    document.getElementById("editModal").classList.remove("hidden");
                 });
 
                 taskList.appendChild(item);
             }
 
-            const addForm = document.getElementById("addTaskForm");
-            const taskInput = document.getElementById("taskInput");
-            const startTimeInput = document.getElementById("startTimeInput");
-            const endTimeInput = document.getElementById("endTimeInput");
+            // Modal Action Controls
+            document.getElementById("cancelEditBtn").addEventListener("click", () => {
+                document.getElementById("editModal").classList.add("hidden");
+            });
 
+            document.getElementById("saveEditBtn").addEventListener("click", async () => {
+                if (!activeEditingTaskId) return;
+
+                const title = document.getElementById("editTitleInput").value.trim();
+                const startTime = document.getElementById("editStartInput").value;
+                const endTime = document.getElementById("editEndInput").value;
+
+                if (!title) return;
+
+                try {
+                    const res = await fetch(`/edit-task/${activeEditingTaskId}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ title, start_time: startTime, end_time: endTime })
+                    });
+                    if (res.ok) {
+                        document.getElementById("editModal").classList.add("hidden");
+                        fetchTasks(selectedDateStr);
+                    }
+                } catch (err) {
+                    console.error("Failed to edit task:", err);
+                }
+            });
+
+            document.getElementById("deleteTaskBtn").addEventListener("click", async () => {
+                if (!activeEditingTaskId) return;
+                try {
+                    const res = await fetch(`/delete-task/${activeEditingTaskId}`, { method: "DELETE" });
+                    if (res.ok) {
+                        document.getElementById("editModal").classList.add("hidden");
+                        fetchTasks(selectedDateStr);
+                    }
+                } catch (err) {
+                    console.error("Failed to delete task:", err);
+                }
+            });
+
+            // Add Form Submission
+            const addForm = document.getElementById("addTaskForm");
             addForm.addEventListener("submit", async (e) => {
                 e.preventDefault();
+                const taskInput = document.getElementById("taskInput");
+                const startTimeInput = document.getElementById("startTimeInput");
+                const endTimeInput = document.getElementById("endTimeInput");
+
                 const title = taskInput.value.trim();
                 if (!title) return;
 
@@ -222,8 +278,6 @@
                         taskInput.value = "";
                         startTimeInput.value = "";
                         endTimeInput.value = "";
-                    } else {
-                        console.error("Server returned error:", res.status);
                     }
                 } catch (err) {
                     console.error("Failed to add task:", err);
@@ -233,7 +287,6 @@
             fetchTasks(selectedDateStr);
         });
     </script>
-
 </body>
 
 </html>

@@ -152,6 +152,7 @@ body {
     border-radius: 14px;
     border: 1px solid #f0f2f5;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    cursor: pointer;
 }
 
 .task-checkbox {
@@ -180,7 +181,7 @@ body {
     white-space: nowrap;
 }
 
-/* Bottom Bar Wrapper (Responsive Fix for Mobile) */
+/* Bottom Bar Wrapper */
 .bottom-bar-container {
     position: fixed;
     bottom: 20px;
@@ -210,7 +211,6 @@ body {
 .task-input {
     flex: 1;
     min-width: 0;
-    /* Prevents text field from breaking wrapper layout */
     border: none;
     outline: none;
     background: transparent;
@@ -242,7 +242,6 @@ body {
     padding: 3px 2px;
     cursor: pointer;
     width: 58px;
-    /* Standardized tight width for mobile browsers */
     text-align: center;
 }
 
@@ -269,4 +268,201 @@ body {
 
 .add-task-btn:active {
     transform: scale(0.92);
+}
+
+/* Edit Modal Sheet */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 16px;
+}
+
+.modal-overlay.hidden {
+    display: none;
+}
+
+.modal-card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 380px;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+
+.modal-card h3 {
+    margin: 0 0 16px 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 12px;
+    border: 1.5px solid #e5e8eb;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    outline: none;
+    margin-bottom: 16px;
+}
+
+.modal-input:focus {
+    border-color: #000;
+}
+
+.modal-time-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    font-size: 0.85rem;
+    color: #50545c;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: #000000;
+    color: #ffffff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    background: #f2f3f5;
+    color: #50545c;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-danger {
+    background: #ff3b30;
+    color: #ffffff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-right: auto;
+}
+
+/* Authentication Page Styles */
+.auth-body {
+    justify-content: center;
+    padding: 20px;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 380px;
+    margin: auto 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.auth-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+    text-align: center;
+}
+
+.auth-subtitle {
+    font-size: 0.95rem;
+    color: #8a8d98;
+    margin: 0 0 28px 0;
+    text-align: center;
+}
+
+.auth-alert {
+    background-color: #ffe5e5;
+    color: #d32f2f;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.auth-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.auth-field label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1c1c1e;
+}
+
+.auth-field input {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1.5px solid #e5e8eb;
+    background-color: #ffffff;
+    font-size: 0.95rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.auth-field input:focus {
+    border-color: #000000;
+}
+
+.auth-btn {
+    margin-top: 8px;
+    width: 100%;
+    padding: 14px;
+    border-radius: 14px;
+    border: none;
+    background-color: #000000;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.1s ease, opacity 0.2s ease;
+}
+
+.auth-btn:active {
+    transform: scale(0.98);
+}
+
+.auth-footer {
+    text-align: center;
+    font-size: 0.88rem;
+    color: #8a8d98;
+    margin-top: 24px;
+}
+
+.auth-footer a {
+    color: #000000;
+    font-weight: 700;
+    text-decoration: none;
 }
