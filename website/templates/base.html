@@ -56,7 +56,9 @@
     </div>
 
     <main class="content-container">
-        {% block content %}{% endblock %}
+        {% block content %}
+        <div id="taskList" class="task-list"></div>
+        {% endblock %}
     </main>
 
     <div class="bottom-bar-container">
@@ -80,21 +82,31 @@
         </form>
     </div>
 
-    <div id="editModal" class="modal-overlay hidden">
-        <div class="modal-card">
-            <h3>Edit Task</h3>
-            <input type="text" id="editTitleInput" class="modal-input" placeholder="Task title..." />
-            <div class="modal-time-row">
-                <label>Time:</label>
-                <input type="time" id="editStartInput" class="time-picker" />
-                <span>-</span>
-                <input type="time" id="editEndInput" class="time-picker" />
+    <div id="editDrawer" class="drawer-overlay hidden">
+        <div class="drawer-content">
+            <div class="drawer-handle" id="drawerHandle"></div>
+            <div class="drawer-header">
+                <h3>Edit Task</h3>
+                <button type="button" id="closeDrawerBtn" class="close-drawer-btn">&times;</button>
             </div>
-            <div class="modal-actions">
-                <button type="button" id="deleteTaskBtn" class="btn-danger">Delete</button>
-                <button type="button" id="cancelEditBtn" class="btn-secondary">Cancel</button>
-                <button type="button" id="saveEditBtn" class="btn-primary">Save</button>
-            </div>
+            <form id="editTaskForm" onsubmit="return false;">
+                <div class="drawer-field">
+                    <label for="editTitleInput">Task Name</label>
+                    <input type="text" id="editTitleInput" class="drawer-input" placeholder="Task title..." required />
+                </div>
+                <div class="drawer-field">
+                    <label>Time Window</label>
+                    <div class="drawer-time-row">
+                        <input type="time" id="editStartInput" class="time-picker drawer-time-picker" />
+                        <span class="time-dash">-</span>
+                        <input type="time" id="editEndInput" class="time-picker drawer-time-picker" />
+                    </div>
+                </div>
+                <div class="drawer-actions">
+                    <button type="button" id="deleteTaskBtn" class="btn-danger">Delete</button>
+                    <button type="submit" id="saveEditBtn" class="btn-primary">Save Changes</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -141,8 +153,6 @@
 
             async function fetchTasks(dateStr) {
                 const taskList = document.getElementById("taskList");
-                if (!taskList) return;
-
                 try {
                     const res = await fetch(`/get-tasks?date=${dateStr}`);
                     if (!res.ok) throw new Error("Failed to load tasks");
@@ -156,6 +166,7 @@
 
                     tasks.forEach(task => renderTaskItem(task));
                 } catch (err) {
+                    console.error("Failed to fetch tasks:", err);
                     taskList.innerHTML = `<p class="empty-state">No tasks here.</p>`;
                 }
             }
@@ -182,7 +193,7 @@
                     ${timeString ? `<span class="task-time">${timeString}</span>` : ""}
                 `;
 
-                // Checkbox Toggle
+                // Toggle checkbox logic
                 item.querySelector(".task-checkbox").addEventListener("click", async (e) => {
                     e.stopPropagation();
                     try {
@@ -196,24 +207,74 @@
                     }
                 });
 
-                // Tap Task to Edit
+                // Tap task card to open iOS bottom drawer
                 item.addEventListener("click", () => {
                     activeEditingTaskId = task.id;
                     document.getElementById("editTitleInput").value = task.title;
                     document.getElementById("editStartInput").value = task.raw_start || "";
                     document.getElementById("editEndInput").value = task.raw_end || "";
-                    document.getElementById("editModal").classList.remove("hidden");
+                    openDrawer();
                 });
 
                 taskList.appendChild(item);
             }
 
-            // Edit Modal Handlers
-            document.getElementById("cancelEditBtn").addEventListener("click", () => {
-                document.getElementById("editModal").classList.add("hidden");
+            // --- iOS Bottom Drawer Logic ---
+            const editDrawer = document.getElementById("editDrawer");
+            const drawerContent = editDrawer.querySelector(".drawer-content");
+            const closeDrawerBtn = document.getElementById("closeDrawerBtn");
+
+            function openDrawer() {
+                drawerContent.style.transform = "";
+                editDrawer.classList.remove("hidden");
+            }
+
+            function closeDrawer() {
+                editDrawer.classList.add("hidden");
+                drawerContent.style.transform = "";
+                activeEditingTaskId = null;
+            }
+
+            closeDrawerBtn.addEventListener("click", closeDrawer);
+            editDrawer.addEventListener("click", (e) => {
+                if (e.target === editDrawer) closeDrawer();
             });
 
-            document.getElementById("saveEditBtn").addEventListener("click", async () => {
+            // Swipe/Drag to dismiss gesture
+            let startY = 0;
+            let currentY = 0;
+            let isDragging = false;
+
+            drawerContent.addEventListener("touchstart", (e) => {
+                startY = e.touches[0].clientY;
+                isDragging = true;
+                drawerContent.style.transition = "none";
+            }, { passive: true });
+
+            drawerContent.addEventListener("touchmove", (e) => {
+                if (!isDragging) return;
+                currentY = e.touches[0].clientY;
+                const deltaY = currentY - startY;
+                if (deltaY > 0) {
+                    drawerContent.style.transform = `translateY(${deltaY}px)`;
+                }
+            }, { passive: true });
+
+            drawerContent.addEventListener("touchend", () => {
+                if (!isDragging) return;
+                isDragging = false;
+                drawerContent.style.transition = "transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)";
+                const deltaY = currentY - startY;
+                if (deltaY > 90) {
+                    closeDrawer();
+                } else {
+                    drawerContent.style.transform = "translateY(0)";
+                }
+            });
+
+            // Save Task Edits
+            document.getElementById("editTaskForm").addEventListener("submit", async (e) => {
+                e.preventDefault();
                 if (!activeEditingTaskId) return;
 
                 const title = document.getElementById("editTitleInput").value.trim();
@@ -226,10 +287,15 @@
                     const res = await fetch(`/edit-task/${activeEditingTaskId}`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ title, start_time: startTime, end_time: endTime })
+                        body: JSON.stringify({
+                            title: title,
+                            start_time: startTime || null,
+                            end_time: endTime || null
+                        })
                     });
+
                     if (res.ok) {
-                        document.getElementById("editModal").classList.add("hidden");
+                        closeDrawer();
                         fetchTasks(selectedDateStr);
                     }
                 } catch (err) {
@@ -237,12 +303,14 @@
                 }
             });
 
+            // Delete Task Handler
             document.getElementById("deleteTaskBtn").addEventListener("click", async () => {
                 if (!activeEditingTaskId) return;
+
                 try {
                     const res = await fetch(`/delete-task/${activeEditingTaskId}`, { method: "DELETE" });
                     if (res.ok) {
-                        document.getElementById("editModal").classList.add("hidden");
+                        closeDrawer();
                         fetchTasks(selectedDateStr);
                     }
                 } catch (err) {
@@ -250,14 +318,14 @@
                 }
             });
 
-            // Add Form Submission
+            // Add Task Handler
             const addForm = document.getElementById("addTaskForm");
+            const taskInput = document.getElementById("taskInput");
+            const startTimeInput = document.getElementById("startTimeInput");
+            const endTimeInput = document.getElementById("endTimeInput");
+
             addForm.addEventListener("submit", async (e) => {
                 e.preventDefault();
-                const taskInput = document.getElementById("taskInput");
-                const startTimeInput = document.getElementById("startTimeInput");
-                const endTimeInput = document.getElementById("endTimeInput");
-
                 const title = taskInput.value.trim();
                 if (!title) return;
 
@@ -284,9 +352,11 @@
                 }
             });
 
+            // Load today's tasks initially
             fetchTasks(selectedDateStr);
         });
     </script>
+
 </body>
 
 </html>
