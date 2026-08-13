@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
 import os
 
 db = SQLAlchemy()
@@ -7,10 +8,7 @@ db = SQLAlchemy()
 def create_app():
     app = Flask(__name__)
 
-    # Fallback to local SQLite if DATABASE_URL isn't set yet
     db_url = os.getenv("DATABASE_URL", "sqlite:///db.sqlite")
-    
-    # Fix Neon/Postgres connection string if it starts with postgres:// (SQLAlchemy requires postgresql://)
     if db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql://", 1)
 
@@ -20,8 +18,23 @@ def create_app():
 
     db.init_app(app)
 
+    # Configure Flask-Login
+    login_manager = LoginManager()
+    login_manager.login_view = 'auth.login'
+    login_manager.init_app(app)
+
+    from .models import User
+
+    @login_manager.user_loader
+    def load_user(id):
+        return User.query.get(int(id))
+
+    # Register Blueprints
     from .views import views
+    from .auth import auth
+    
     app.register_blueprint(views, url_prefix='/')
+    app.register_blueprint(auth, url_prefix='/')
 
     with app.app_context():
         db.create_all()

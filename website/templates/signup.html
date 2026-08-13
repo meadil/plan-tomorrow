@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Sign Up - Plan Tomorrow</title>
+</head>
+
+<body
+    style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background-color: #FCFFFD;">
+
+    <div style="width: 100%; max-width: 360px; padding: 20px;">
+        <h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 6px;">Create Account</h2>
+        <p style="color: #8a8d98; font-size: 0.9rem; margin-bottom: 24px;">Start planning your days effortlessly</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div style="padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 16px; 
+                {% if category == 'error' %} background-color: #fef2f2; color: #dc2626; border: 1px solid #fee2e2;
+                {% else %} background-color: #f0fdf4; color: #16a34a; border: 1px solid #dcfce7; {% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" name="email" id="email" class="edit-text-input" placeholder="you@example.com"
+                    required />
+            </div>
+
+            <div class="form-group" style="margin-top: 14px;">
+                <label for="password">Password</label>
+                <input type="password" name="password" id="password" class="edit-text-input"
+                    placeholder="Minimum 6 characters" required minlength="6" />
+            </div>
+
+            <button type="submit" class="save-task-btn" style="width: 100%; margin-top: 20px; padding: 14px;">Sign
+                Up</button>
+        </form>
+
+        <p style="text-align: center; font-size: 0.85rem; color: #8a8d98; margin-top: 20px;">
+            Already have an account? <a href="{{ url_for('auth.login') }}"
+                style="color: #000000; font-weight: 600; text-decoration: none;">Log In</a>
+        </p>
+    </div>
+
+</body>
+
+</html>

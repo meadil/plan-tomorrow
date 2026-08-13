@@ -1,20 +1,21 @@
 from flask import Blueprint, render_template, request, jsonify
+from flask_login import login_required, current_user
 from .models import Task
 from . import db
-from datetime import datetime, date, time
+from datetime import datetime, date
 
 views = Blueprint('views', __name__)
 
-# Helper to format Python time object to "09:30 AM" string
 def format_time_str(t):
     return t.strftime("%I:%M %p").lstrip("0") if t else None
 
 @views.route('/')
+@login_required
 def home():
-    return render_template("base.html", current_time=datetime.now())
+    return render_template("base.html", current_time=datetime.now(), user=current_user)
 
-# Fetch tasks ordered by start_time (nulls last), then creation order
 @views.route('/get-tasks', methods=['GET'])
+@login_required
 def get_tasks():
     date_str = request.args.get('date')
     if not date_str:
@@ -22,7 +23,7 @@ def get_tasks():
     else:
         target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
         
-    tasks = Task.query.filter_by(date=target_date)\
+    tasks = Task.query.filter_by(date=target_date, user_id=current_user.id)\
         .order_by(Task.start_time.asc().nullslast(), Task.created_at.asc()).all()
     
     return jsonify([
@@ -37,8 +38,8 @@ def get_tasks():
         } for t in tasks
     ])
 
-# Add task with start and end time
 @views.route('/add-task', methods=['POST'])
+@login_required
 def add_task():
     data = request.get_json() or {}
     title = data.get('title')
@@ -57,17 +58,18 @@ def add_task():
         title=title, 
         date=task_date,
         start_time=parsed_start,
-        end_time=parsed_end
+        end_time=parsed_end,
+        user_id=current_user.id
     )
     db.session.add(new_task)
     db.session.commit()
 
     return jsonify({'success': True}), 201
 
-# Edit task title and times
 @views.route('/edit-task/<int:task_id>', methods=['POST'])
+@login_required
 def edit_task(task_id):
-    task = Task.query.get_or_404(task_id)
+    task = Task.query.filter_by(id=task_id, user_id=current_user.id).first_or_404()
     data = request.get_json() or {}
 
     title = data.get('title')
@@ -83,17 +85,18 @@ def edit_task(task_id):
     db.session.commit()
     return jsonify({'success': True})
 
-# Delete task
 @views.route('/delete-task/<int:task_id>', methods=['POST'])
+@login_required
 def delete_task(task_id):
-    task = Task.query.get_or_404(task_id)
+    task = Task.query.filter_by(id=task_id, user_id=current_user.id).first_or_404()
     db.session.delete(task)
     db.session.commit()
     return jsonify({'success': True})
 
 @views.route('/toggle-task/<int:task_id>', methods=['POST'])
+@login_required
 def toggle_task(task_id):
-    task = Task.query.get_or_404(task_id)
+    task = Task.query.filter_by(id=task_id, user_id=current_user.id).first_or_404()
     task.is_completed = not task.is_completed
     db.session.commit()
     return jsonify({'id': task.id, 'is_completed': task.is_completed})

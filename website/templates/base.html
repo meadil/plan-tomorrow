@@ -10,9 +10,14 @@
 
 <body>
 
-    <div class="date-display">
-        <h2>{{ current_time.strftime("%B '%y") }}</h2>
-        <h3>{{ current_time.strftime("%A") }}</h3>
+    <div class="date-display" style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+            <h2>{{ current_time.strftime("%B '%y") }}</h2>
+            <h3>{{ current_time.strftime("%A") }}</h3>
+        </div>
+        <a href="{{ url_for('auth.logout') }}"
+            style="color: #8a8d98; font-size: 0.8rem; text-decoration: none; font-weight: 500; background: #f2f3f5; padding: 6px 12px; border-radius: 8px;">Log
+            Out</a>
     </div>
 
     <div class="week-bar" id="weekBar">
